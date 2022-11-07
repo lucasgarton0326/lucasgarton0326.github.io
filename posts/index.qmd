@@ -1,0 +1,176 @@
+---
+title: "How Leicster City won the Premier League"
+author: "Lucas Garton"
+date: '2022-10-21'
+categories: [soccer, data, liecstercity]
+image: "image.png"
+format: 
+  html:
+    code-fold: true
+---
+Leicester City won the premier league in 2015-2016 as the biggest underdog with 5000/1 odds to win the premier league. It still is considered one of the biggest sporting miracles every. A small club with little money to spend managed to win the league battling the like of Manchester City and Chelsea clubs with much more money to spend on bringing in new talent. For those not familiar with Soccer it would be like if a triple AAA baseball team somehow managed to win the world series after almost being demoted to AA the year before.
+
+It all started the year before they had barely avoided relegation by only six points. With 29 matches played Leicester sat the bottom of the table and all looked lost, before they rattled of sting of matches that included a four-game win streak only to be broken by champions that year Chelsea.
+
+What made Leicester so successful the following year was a multitude of things. After finishing the prior season with a negative goal differential of –9. The Fox’s turned into one of the best goal scoring offenses in the Premier League as well as becoming a fortress in defense. 
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggalt)
+library(gt)
+library(ggbeeswarm)
+library(ggrepel)
+library(worldfootballR)
+
+table<-read.csv("~/Desktop/Homework/SPMC 350/blogspmc350/posts/leicstercitypost/2015-2016premierleague table.csv")
+
+goals<-table%>%group_by(Squad, GF, GA)
+lc<-goals%>% filter(Squad== "Leicester City")
+
+ggplot() + 
+  geom_point(
+    data=goals, 
+    aes(x=GF, y=GA, size=Pts),
+    alpha = .2) + 
+  scale_size(range = c(2, 9), name="Points") +
+  geom_point(
+    data=lc, 
+    aes(x=GF, y=GA, size=Pts),color="blue")+
+  geom_vline(xintercept = 51.3) + 
+  geom_hline(yintercept = 51.3) +
+  geom_text(data=lc, aes(x=GF, y=GA+2),color="blue", label="Leicester City") +
+  geom_text(aes(x=60, y=60, label="Good Offense, Bad Defense"), color="black") +
+  geom_text(aes(x=40, y=40, label="Good Defense, Bad Offense"), color="black") +
+labs(
+    x="Goals Scored", 
+    y="Goals Against", 
+    title="Leicester was one of the best teams on both sides of the ball.", 
+    subtitle="The foxes kept goal scoring pace with the big clubs in England while not allowing many goals.", 
+    caption="Source: Sports Refernce | By Lucas Garton"
+    ) +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank(),
+    plot.title.position = "plot"
+    )
+```
+
+Leicester didn’t exactly dominate opponents on their way to their first Premier League title. Despite being one the better goalscoring teams the Fox’s held less than 50% possession.
+
+```{r, message=FALSE, warning=FALSE}
+prem<-read.csv("~/Desktop/Homework/SPMC 350/blogspmc350/posts/leicstercitypost/2015-2016premierleague squad stats.csv")
+
+lc<-prem%>%
+  filter(Squad=="Leicester City")
+
+ggplot() + 
+  geom_point(
+    data=prem, 
+    aes(x=Gls, y=Poss)) +
+  geom_point(
+    data=lc, 
+    aes(x=Gls, y=Poss),color="blue") +
+  geom_vline(xintercept = 51.3) + 
+  geom_hline(yintercept = 50) +
+  geom_text(data=lc, aes(x=Gls, y=Poss+1),color="blue", label="Leicester City") +
+  geom_text(aes(x=60, y=53, label="Good Offense"), color="black") +
+  geom_text(aes(x=30, y=45, label="Bad Offense"), color="black") +
+labs(
+    x="Goals", 
+    y="Average Possesion%", 
+    title="Leicester sored lots of goals despite having less possesion.", 
+    subtitle="Fox's goal scoring was elite in the Premier League but they failed to hold on to the ball", 
+    caption="Source: Sports Refernce | By Lucas Garton"
+    ) +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank(),
+    plot.title.position = "plot")
+```
+
+The players that made the biggest difference for Leicester was Jamie Vardy and Englishman that had worked is way up through the English football system, and Riyad Mahrez a plyer that had only joined from second division France. Jamie Vardy was the leading goal scorer for the Fox’s and set the record for most games scored in a row at 11 during the season. Mahrez led the league in assists.
+
+```{r, message=FALSE, warning=FALSE}
+big5_player_standard <- fb_big5_advanced_season_stats(season_end_year= c(2016), stat_type= "standard", team_or_player= "player")
+
+prem<-big5_player_standard%>%
+  filter(Comp=="Premier League")%>%
+  mutate(points= Gls+Ast)%>%
+  filter(points>0)
+
+jv<-prem%>% filter(
+  points==30)
+rm<-prem%>% filter(
+  points==28)
+
+ggplot() + 
+  geom_point(
+    data=prem, 
+    aes(x=points, y=Min_Playing)) +
+  geom_point(
+    data=jv, 
+    aes(x=points, y=Min_Playing),color="blue")+
+    geom_point(
+    data=rm, 
+    aes(x=points, y=Min_Playing),color="blue") +
+  geom_text(data=jv, aes(x=points-1, y=Min_Playing+120),color="blue", label="Jamie Vardy") +
+  geom_text(data=rm, aes(x=points, y=Min_Playing-120),color="blue", label="Riyad Mahrez") +
+  labs(
+    x="Goals + Asists", 
+    y="Minutes Played", 
+    title="Leicester's frontline was prolific in 2015-2016.", 
+    subtitle="The Fox's offense was lead by Vardy and Mahrez who lead the legue in points", 
+    caption="Source: Sports Refernce | By Lucas Garton"
+    ) +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank(),
+    plot.title.position = "plot"
+    )
+```
+
+Despite the all the goals scored by the prolific tandem for Leicester one thing stands out when looking at the numbers. When it comes to penalties awarded and penalties scored Leicester was awarded the most with 13 and scored the most with 10. Compared to other clubs the penalties stand out the second most in Manchester City. If not for the penalties scored the Leicester would have seen themselves just above mid-table team and not champions.
+
+```{r, message=FALSE, warning=FALSE}
+prem<-read.csv("~/Desktop/Homework/SPMC 350/blogspmc350/posts/leicstercitypost/2015-2016premierleague squad stats.csv")
+
+goaltype<-prem%>%group_by(Squad)%>%
+  summarise(nonpens=sum(`G.PK`),
+            pens=sum(PK))
+
+goaltypewide<-goaltype%>%
+  pivot_longer(cols = ends_with("pens"),
+               names_to = "Type",
+               values_to = "Goals")
+
+ggplot() + 
+  geom_bar(
+    data=goaltypewide, 
+    aes (x=reorder(Squad,Goals), weight=Goals, fill=Type)) + 
+  coord_flip() +
+  labs(
+    x="", 
+    y="Goals", 
+    title="Leicester scored lots of goals but was helped by penalty goals", 
+    subtitle="The Fox's goal total was good enough for third but was propped up by the amount of penalty goals they had.", 
+    caption="Source: Sports Refernce | By Lucas Garton"
+    ) +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank(),
+    plot.title.position = "plot"
+    )
+```
+
